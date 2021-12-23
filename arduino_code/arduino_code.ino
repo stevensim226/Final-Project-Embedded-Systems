@@ -29,17 +29,17 @@ void setup() {
   Serial.println("Ready");
 
   while (true) {
-    String s = "";
-    boolean t = false;
+    String recv_str = "";
+    boolean t = false; // Check if received something
     while(Serial1.available() > 0) {
-       s = Serial1.readString();
+       recv_str = Serial1.readString();
        t = true;
     }
 
     if (t){
-      Serial.println(s);
+      Serial.println(recv_str);
 
-      if (s.indexOf("ted") != -1) {
+      if (recv_str.indexOf("ted") != -1) { // Connec"ted", if yes go to loop
         break;
       }
     }
@@ -55,7 +55,6 @@ void setup() {
   Serial.println("Interrupt attached");
 }
 
-int counter = 0;
 bool extFireFlag = false;
 float temp;
 float smoke;
@@ -70,6 +69,7 @@ void loop() {
        recv_str = Serial1.readString();
        t = true;
 
+       // Read messages from ESP8266 (MQTT Subscription)
        if (recv_str.indexOf("FIRE") != -1) {
           extFireFlag = true;
        } else if (recv_str.indexOf("SAFE") != -1) {
@@ -101,6 +101,9 @@ void loop() {
   }
 }
 
+/*
+Write strings of class `String` to Serial1 (ESP8266)
+*/
 void writeString(String stringData) { // Used to serially push out a String with Serial.write()
   for (int i = 0; i < stringData.length(); i++)
   {
@@ -123,11 +126,14 @@ float readSmoke() {
   return sensorValue;
 }
 
+/*
+Show temperature value in TM1637 7-digit-display
+*/
 void displayTemp(float temp) {
   String temp_str = String(temp);
   int gap = 0;
   for (int ii = 0; ii < temp_str.length(); ii++) {
-    if (ii == 2) {
+    if (ii == 2) { // Skip "." symbol in floating point
       gap = 1;
       continue;
     }
@@ -135,6 +141,9 @@ void displayTemp(float temp) {
   }
 }
 
+/*
+ISR to turn on/off buzzer based on button press or FIRE/SAFE message
+*/
 void interruptServiceRoutine() {
   if (millis() - lastInterrupt <= 500) return;
   Serial.println("======================");
